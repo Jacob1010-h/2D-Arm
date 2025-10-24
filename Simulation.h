@@ -4,6 +4,7 @@
 #include "Link2D.h"
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 
 /**
  * Main simulation class for the 2D articulated arm
@@ -63,6 +64,9 @@ public:
      * Get a specific link
      */
     const Link2D& getLink(size_t index) const {
+        if (index >= links.size()) {
+            throw std::out_of_range("Link index out of bounds");
+        }
         return links[index];
     }
     

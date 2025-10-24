@@ -2,6 +2,7 @@
 #define LINK2D_H
 
 #include "Vector2D.h"
+#include <cmath>
 
 /**
  * Represents a single link in a 2D articulated arm
