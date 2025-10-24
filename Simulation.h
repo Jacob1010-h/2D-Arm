@@ -6,9 +6,6 @@
 #include <iostream>
 #include <stdexcept>
 
-/**
- * Main simulation class for the 2D articulated arm
- */
 class Simulation {
 private:
     std::vector<Link2D> links;
@@ -18,16 +15,10 @@ private:
 public:
     Simulation(double timeStep = 0.01) : time(0.0), dt(timeStep) {}
     
-    /**
-     * Add a link to the arm
-     */
     void addLink(double length, double initialAngle = 0.0) {
         links.push_back(Link2D(length, initialAngle));
     }
     
-    /**
-     * Update all links in the chain
-     */
     void step() {
         // Update positions based on chain connectivity
         for (size_t i = 0; i < links.size(); ++i) {
@@ -46,23 +37,14 @@ public:
         time += dt;
     }
     
-    /**
-     * Get the current time in the simulation
-     */
     double getTime() const {
         return time;
     }
     
-    /**
-     * Get number of links
-     */
     size_t getLinkCount() const {
         return links.size();
     }
     
-    /**
-     * Get a specific link
-     */
     const Link2D& getLink(size_t index) const {
         if (index >= links.size()) {
             throw std::out_of_range("Link index out of bounds");
@@ -70,9 +52,6 @@ public:
         return links[index];
     }
     
-    /**
-     * Print current state of the arm
-     */
     void printState() const {
         std::cout << "Time: " << time << "s" << std::endl;
         for (size_t i = 0; i < links.size(); ++i) {
