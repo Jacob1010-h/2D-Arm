@@ -1,44 +1,59 @@
 use crate::commands::command_base::{Boxable, CommandBase};
 
 pub struct CommandScheduler {
-    commands: Vec<Box<dyn CommandBase>>,
-    current_command: Option<Box<dyn CommandBase>>,
+    active: Vec<Box<dyn CommandBase>>,
+    pending: Vec<Box<dyn CommandBase>>,
 }
 
 impl CommandScheduler {
     pub fn new() -> Self {
         CommandScheduler {
-            commands: Vec::new(),
-            current_command: None,
+            active: Vec::new(),
+            pending: Vec::new(),
         }
+    }
+
+    pub fn schedule<C: Boxable>(&mut self, command: C) {
+        let mut boxed = command.boxed();
+        println!("[Scheduler] Queuing '{}'", boxed.name());
+        self.pending.push(boxed);
     }
 
     pub fn add_command<C: Boxable>(&mut self, command: C) {
-        self.commands.push(command.boxed()); // Use the boxed method
-        for command in &mut self.commands {
-            println!("{}", command.get_name());
-        }
-        println!("----------------")
+        self.schedule(command);
     }
 
     pub fn run(&mut self) {
-        // Check if the current command is finished
-        if let Some(current) = &mut self.current_command {
-            if current.is_finished() {
-                println!("Current Command finished. Removing it.");
-                self.current_command = None; // Set current_command to None
-            } else {
-                current.execute();
-                return;
-            }
+        // Start pending commands
+        for mut cmd in self.pending.drain(..) {
+            println!("[Scheduler] Starting '{}'", cmd.name());
+            cmd.initialize();
+            self.active.push(cmd);
         }
 
-        // If there's no current command, get the next one if available
-        if self.current_command.is_none() && !self.commands.is_empty() {
-            println!("Starting a new command.");
-            let mut next = self.commands.remove(0);
-            next.initialize();
-            self.current_command = Some(next);
+        // Execute all active commands
+        for cmd in self.active.iter_mut() {
+            cmd.execute();
         }
+
+        // Clean up finished commands
+        let mut i = 0;
+        while i < self.active.len() {
+            if self.active[i].is_finished() {
+                let mut c = self.active.remove(i);
+                println!("[Scheduler] Ending '{}'", c.name());
+                c.end(false);
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    pub fn cancel_all(&mut self) {
+        for mut cmd in self.active.drain(..) {
+            println!("[Scheduler] Canceling '{}'", cmd.name());
+            cmd.end(true);
+        }
+        self.pending.clear();
     }
 }

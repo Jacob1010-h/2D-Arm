@@ -1,4 +1,4 @@
-pub trait Boxable: CommandBase {
+pub trait Boxable: CommandBase + 'static {
     fn boxed(self) -> Box<dyn CommandBase>;
 }
 
@@ -10,10 +10,23 @@ impl<T: CommandBase + 'static> Boxable for T {
 }
 
 pub trait CommandBase {
-    fn execute(&mut self);
-    fn is_finished(&mut self) -> bool;
-    fn stop(&mut self);
+    /// Called once the command is first scheduled
     fn initialize(&mut self);
+
+    /// Called on every scheduler tick which the command is active.
+    fn execute(&mut self);
+
+    /// Return true when the command is complete.
+    fn is_finished(&mut self) -> bool;
+
+    /// Called once when the command ends or is interrupted.
+    fn end(&mut self, interrupted: bool);
+    
+    /// Overrites the name
     fn set_name(&mut self, name: &str);
-    fn get_name(&mut self) -> String;
+    
+    /// Gets the curr name that is set
+    fn name(&mut self) -> String;
+    
+
 }

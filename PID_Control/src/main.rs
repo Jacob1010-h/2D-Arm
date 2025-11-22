@@ -1,30 +1,63 @@
-
-
-mod pid;
 mod commands;
 
-use crate::pid::pid_controller::Calculation;
-use crate::commands::command_scheduler::{CommandScheduler};
-use crate::commands::runnable_command::{RunnableCommand};
-use crate::commands::timed_command::{TimedCommand};
+use std::{thread::sleep, time::Duration};
+
+use commands::{
+    command_scheduler::CommandScheduler,
+    instant_command::InstantCommand,
+    timed_command::TimedCommand,
+    parallel_command_group::ParallelCommandGroup,
+    sequential_command_group::SequentialCommandGroup,
+    command_base::Boxable,
+};
 
 fn main() {
+    println!("=============================");
+    println!(" SIMPLE COMMAND TEST PROGRAM");
+    println!("=============================\n");
+
     let mut scheduler = CommandScheduler::new();
 
-    let command = RunnableCommand::new("Test", || {
-        println!("This is all a test");
-    });
+    // --- Test 1: RunnableCommand ---
+    scheduler.add_command(
+        InstantCommand::new("SayHello", || {
+            println!(">>> Hello from RunnableCommand!");
+        })
+    );
 
-    scheduler.add_command(command);
+    // --- Test 2: TimedCommand ---
+    scheduler.add_command(
+        TimedCommand::new("Wait1Second", 1.0)
+    );
 
-    // Create and clone the TimedCommand; ensure you initialize cloned ones
-    let timed = TimedCommand::new("Timed Command", 2);
-    let timed_clone = timed.clone(); // Clone it for later use
+    // --- Test 3: SequentialCommandGroup ---
+    let seq = SequentialCommandGroup::new("Seq Test", vec![
+        InstantCommand::new("Seq Step 1", || {
+            println!(">>> Seq Step 1 Running!");
+        }).boxed(),
 
-    scheduler.add_command(timed); // This command will run first
-    scheduler.add_command(timed_clone); // Add the clone as a separate command
+        TimedCommand::new("Seq Wait 0.5s", 0.5).boxed(),
 
+        InstantCommand::new("Seq Step 2", || {
+            println!(">>> Seq Step 2 Running!");
+        }).boxed(),
+    ]);
+
+    scheduler.add_command(seq);
+
+    // --- Test 4: ParallelCommandGroup ---
+    let par = ParallelCommandGroup::new("Parallel Test", vec![
+        TimedCommand::new("Par Cmd 1 (0.8s)", 0.8).boxed(),
+        TimedCommand::new("Par Cmd 2 (1.0s)", 1.0).boxed(),
+    ]);
+
+    scheduler.add_command(par);
+
+    println!("\n--- Starting Scheduler Loop ---\n");
+
+    // Simple "robot loop"
     loop {
         scheduler.run();
+        sleep(Duration::from_millis(100));
     }
 }
