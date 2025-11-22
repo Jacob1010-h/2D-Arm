@@ -1,0 +1,53 @@
+# ------------------------------
+# Rust / Cargo
+# ------------------------------
+/target/
+/Cargo.lock
+
+# If you're making a library, remove the above line.
+
+# Rust build output
+debug/
+release/
+
+# Incremental compilation
+**/*.rs.bk
+
+# ------------------------------
+# VSCode
+# ------------------------------
+.vscode/
+*.code-workspace
+
+# Rust-Analyzer and tooling
+**/.rustc_info.json
+
+# ------------------------------
+# JetBrains (CLion / IntelliJ)
+# ------------------------------
+.idea/
+*.iml
+cmake-build-debug/
+cmake-build-release/
+
+# ------------------------------
+# Logs / temp files
+# ------------------------------
+*.log
+*.tmp
+*.swp
+*.swo
+
+# ------------------------------
+# OS-specific crap
+# --------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Linux
+*~
