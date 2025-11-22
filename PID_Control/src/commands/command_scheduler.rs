@@ -1,4 +1,3 @@
-use colored::Colorize;
 
 use crate::{commands::command_base::{Boxable, CommandBase}, logger::{info, success, warn}};
 
@@ -20,10 +19,6 @@ impl CommandScheduler {
         let msg = format!("Queuing '{}'", boxed.name());
         info("[Scheduler]", msg);
         self.pending.push(boxed);
-    }
-
-    pub fn add_command<C: Boxable>(&mut self, command: C) {
-        self.schedule(command);
     }
 
     pub fn run(&mut self) {

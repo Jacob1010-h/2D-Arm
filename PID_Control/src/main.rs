@@ -15,13 +15,13 @@ fn main() {
 
     robot.init();
 
-    robot.scheduler.add_command(
+    robot.scheduler.schedule(
         InstantCommand::new("StartupPrint", || {
             println!(">>> Robot startup scheck!");
         })
     );
 
-    robot.scheduler.add_command(
+    robot.scheduler.schedule(
         TimedCommand::new("WarmUpTimer", 1.0)
     );
 
