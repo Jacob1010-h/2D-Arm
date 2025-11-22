@@ -6,7 +6,7 @@ mod logger;
 
 
 use std::time::Instant;
-use crate::{commands::{instant_command::InstantCommand, timed_command::TimedCommand}, constants::LOOP_RATE_HZ, robot::{Robot, RobotMode}, ticker::Ticker};
+use crate::{commands::{instant_command::InstantCommand, timed_command::TimedCommand}, constants::LOOP_RATE_HZ, logger::warn, robot::{Robot, RobotMode}, ticker::Ticker};
 
 
 fn main() {
@@ -25,7 +25,10 @@ fn main() {
         TimedCommand::new("WarmUpTimer", 1.0)
     );
 
-    println!("\n[Main] Entering robot loop at {} Hz\n", LOOP_RATE_HZ);
+    let _msg = format!("Entering robot loop at {} Hz\n", LOOP_RATE_HZ);
+    println!();
+    warn("[Main]", _msg);
+
 
     loop {
         let start = Instant::now();
