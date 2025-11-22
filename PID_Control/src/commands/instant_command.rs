@@ -1,5 +1,7 @@
 use std::sync::Arc;
-use crate::commands::command_base::CommandBase;
+use colored::Colorize;
+
+use crate::{commands::command_base::CommandBase, logger::{info, success, warn}};
 
 pub struct InstantCommand {
     name: String,
@@ -20,12 +22,14 @@ impl InstantCommand {
 impl CommandBase for InstantCommand {
     fn initialize(&mut self) {
         self.has_run = false;
-        println!("[Runnable] Initializing '{}'", self.name);
+        let msg = format!("Initializing '{}'", self.name);
+        success("[Instant]", msg);
     }
 
     fn execute(&mut self) {
         if !self.has_run {
-            println!("[Runnable] Running '{}'", self.name);
+            let msg = format!("Running '{}'", self.name);
+            info("[Instant]", msg);
             (self.action)();
             self.has_run = true;
         }
@@ -37,9 +41,13 @@ impl CommandBase for InstantCommand {
 
     fn end(&mut self, interrupted: bool) {
         if interrupted {
-            println!("[Runnable] '{}' interrupted.", self.name);
+
+            let msg = format!("'{}' interrupted.", self.name);
+            warn("[Instant]", msg);
         } else {
-            println!("[Runnable] '{}' completed.", self.name);
+
+            let msg = format!("'{}' completed.", self.name);
+            success("[Instant]", msg);
         }
     }
 

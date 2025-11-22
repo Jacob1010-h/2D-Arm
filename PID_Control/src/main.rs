@@ -1,63 +1,45 @@
 mod commands;
+mod constants;
+mod ticker;
+mod robot;
+mod logger;
 
-use std::{thread::sleep, time::Duration};
 
-use commands::{
-    command_scheduler::CommandScheduler,
-    instant_command::InstantCommand,
-    timed_command::TimedCommand,
-    parallel_command_group::ParallelCommandGroup,
-    sequential_command_group::SequentialCommandGroup,
-    command_base::Boxable,
-};
+use std::time::Instant;
+use crate::{commands::{instant_command::InstantCommand, timed_command::TimedCommand}, constants::LOOP_RATE_HZ, robot::{Robot, RobotMode}, ticker::Ticker};
+
 
 fn main() {
-    println!("=============================");
-    println!(" SIMPLE COMMAND TEST PROGRAM");
-    println!("=============================\n");
+    let ticker = Ticker::new(LOOP_RATE_HZ);
+    let mut robot = Robot::new();
 
-    let mut scheduler = CommandScheduler::new();
+    robot.init();
 
-    // --- Test 1: RunnableCommand ---
-    scheduler.add_command(
-        InstantCommand::new("SayHello", || {
-            println!(">>> Hello from RunnableCommand!");
+    robot.scheduler.add_command(
+        InstantCommand::new("StartupPrint", || {
+            println!(">>> Robot startup scheck!");
         })
     );
 
-    // --- Test 2: TimedCommand ---
-    scheduler.add_command(
-        TimedCommand::new("Wait1Second", 1.0)
+    robot.scheduler.add_command(
+        TimedCommand::new("WarmUpTimer", 1.0)
     );
 
-    // --- Test 3: SequentialCommandGroup ---
-    let seq = SequentialCommandGroup::new("Seq Test", vec![
-        InstantCommand::new("Seq Step 1", || {
-            println!(">>> Seq Step 1 Running!");
-        }).boxed(),
+    println!("\n[Main] Entering robot loop at {} Hz\n", LOOP_RATE_HZ);
 
-        TimedCommand::new("Seq Wait 0.5s", 0.5).boxed(),
-
-        InstantCommand::new("Seq Step 2", || {
-            println!(">>> Seq Step 2 Running!");
-        }).boxed(),
-    ]);
-
-    scheduler.add_command(seq);
-
-    // --- Test 4: ParallelCommandGroup ---
-    let par = ParallelCommandGroup::new("Parallel Test", vec![
-        TimedCommand::new("Par Cmd 1 (0.8s)", 0.8).boxed(),
-        TimedCommand::new("Par Cmd 2 (1.0s)", 1.0).boxed(),
-    ]);
-
-    scheduler.add_command(par);
-
-    println!("\n--- Starting Scheduler Loop ---\n");
-
-    // Simple "robot loop"
     loop {
-        scheduler.run();
-        sleep(Duration::from_millis(100));
+        let start = Instant::now();
+
+        robot.periodic();
+
+        match robot.get_mode() {
+            RobotMode::AUTONOMOUS => robot.auto_periodic(),
+            RobotMode::TELEOP => robot.teleop_periodic(),
+            RobotMode::None => println!("[Main] Robot Mode not set"),
+        }
+
+        ticker.wait(start);
     }
+
+    
 }

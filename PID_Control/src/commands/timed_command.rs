@@ -1,6 +1,8 @@
 use std::time::{Duration, Instant};
 
-use crate::commands::command_base::CommandBase;
+use colored::Colorize;
+
+use crate::{commands::command_base::CommandBase, logger::{info, success, warn}};
 
 #[derive(Debug)]
 pub struct TimedCommand {
@@ -23,14 +25,16 @@ impl TimedCommand {
 
 impl CommandBase for TimedCommand {
     fn initialize(&mut self) {
-        println!("[Timed] Initializing '{}' for {:?}", self.name, self.duration);
+        let msg = format!("Initializing '{}' for {:?}", self.name, self.duration);
+        success("[Timed]", msg);
         self.start = Some(Instant::now())
     }
 
     fn execute(&mut self) {
         if let Some(start) = self.start {
             let e = start.elapsed();
-            println!("[Timed] '{}' {:.2?} / {:.2?}", self.name, e, self.duration);
+            let msg = format!("'{}' {:.2?} / {:.2?}", self.name, e, self.duration);
+            info("[Timed]", msg);
         }
     }
 
@@ -48,9 +52,11 @@ impl CommandBase for TimedCommand {
 
     fn end(&mut self, interrupted: bool) {
         if interrupted {
-            println!("[Timed] '{}' interrupted.", self.name);
+            let msg = format!("'{}' interrupted.", self.name);
+            warn("[Timed]", msg);
         } else {
-            println!("[Timed] '{}' finished.", self.name);
+            let msg = format!("'{}' finished.", self.name);
+            success("[Timed]", msg);
         }
     }
 

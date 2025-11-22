@@ -1,4 +1,6 @@
-use crate::commands::command_base::{Boxable, CommandBase};
+use colored::Colorize;
+
+use crate::{commands::command_base::{Boxable, CommandBase}, logger::{info, success, warn}};
 
 pub struct CommandScheduler {
     active: Vec<Box<dyn CommandBase>>,
@@ -15,7 +17,8 @@ impl CommandScheduler {
 
     pub fn schedule<C: Boxable>(&mut self, command: C) {
         let mut boxed = command.boxed();
-        println!("[Scheduler] Queuing '{}'", boxed.name());
+        let msg = format!("Queuing '{}'", boxed.name());
+        info("[Scheduler]", msg);
         self.pending.push(boxed);
     }
 
@@ -26,7 +29,8 @@ impl CommandScheduler {
     pub fn run(&mut self) {
         // Start pending commands
         for mut cmd in self.pending.drain(..) {
-            println!("[Scheduler] Starting '{}'", cmd.name());
+            let msg = "Starting ".to_owned()+&cmd.name();
+            success("[Timed]", msg);
             cmd.initialize();
             self.active.push(cmd);
         }
@@ -41,7 +45,8 @@ impl CommandScheduler {
         while i < self.active.len() {
             if self.active[i].is_finished() {
                 let mut c = self.active.remove(i);
-                println!("[Scheduler] Ending '{}'", c.name());
+                let msg = format!("Ending '{}'", c.name());
+                success("[Scheduler]", msg);
                 c.end(false);
             } else {
                 i += 1;
@@ -51,7 +56,8 @@ impl CommandScheduler {
 
     pub fn cancel_all(&mut self) {
         for mut cmd in self.active.drain(..) {
-            println!("[Scheduler] Canceling '{}'", cmd.name());
+            let msg = format!("Canceling '{}'", cmd.name());
+            warn("[Scheduler]", msg);
             cmd.end(true);
         }
         self.pending.clear();
