@@ -34,7 +34,9 @@ fn main() {
 
     let pid: PidController = PidController::new(10.0, 0.05, 0.5);
 
-    let target_pos_rad = std::f64::consts::FRAC_PI_2;
+
+    let target_pos_deg: f32 = 45.0;
+    let target_pos_rad: f64 = target_pos_deg.to_radians().into();
 
     let cmd = MotorPositionCommand::new("ArmTo90deg", motor, pid, target_pos_rad);
     robot.scheduler.schedule(cmd);
