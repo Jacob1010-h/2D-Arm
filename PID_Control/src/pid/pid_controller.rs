@@ -2,49 +2,57 @@ pub struct PidController {
     k_p: f64,
     k_i: f64,
     k_d: f64,
-    error: f64,
-    setpoint: f64
-}
-
-pub trait Calculation {
-    fn step(&self, dt: f64, prev_err: f64, integ_total: f64) -> PidOut;
 }
 
 pub struct PidOut {
     pub output: f64,
     pub error: f64,
-    pub integ_total: f64
+    pub integ_total: f64,
 }
 
 impl PidController {
-    pub fn new() -> Self {
-        Self { k_p: 0.0, k_i: 0.0, k_d: 0.0, error: 0.0, setpoint: 0.0 }
+    pub fn new(k_p: f64, k_i: f64, k_d: f64) -> Self {
+        Self { k_p, k_i, k_d }
     }
-}
 
-impl Calculation for PidController {
-    /// The step() function will preform the calculation for PID given all of the required inputs.
-    /// 
-    /// @params: dt: f64, prevErr: f64, integTotal: f64 
-    /// @returns: PID_OUT{output, error, integTotal}
-    fn step(&self, dt: f64, prev_err: f64, mut integ_total: f64) -> PidOut {
-        // Calculate the Proportional
-        let p = self.k_p * self.error;
-        // Calculate the Integral
-        let i = self.k_i * self.error * dt;
-        integ_total += i;
-        // Calculate the Derivative
-        let d = self.k_d * (self.error * prev_err) / dt;
+    /// Classic PID:
+    ///   error = setpoint - measurement
+    ///   P = k_p * error
+    ///   I += k_i * error * dt
+    ///   D = k_d * (error - prev_error) / dt
+    ///
+    /// You keep track of prev_error and integ_total outside,
+    /// pass them in, and we return the updated values.
+    pub fn step(
+        &self,
+        dt: f64,
+        setpoint: f64,
+        measurement: f64,
+        prev_err: f64,
+        mut integ_total: f64,
+    ) -> PidOut {
+        let error = setpoint - measurement;
 
-        // Calculate the output and then return the error and total integral.
-        let output = p + integ_total + d;
-        return PidOut {
-            output: output,
-            error: self.error,
-            integ_total
+        // Proportional
+        let p = self.k_p * error;
+
+        // Integral
+        integ_total += self.k_i * error * dt;
+
+        // Derivative
+        let derivative = if dt > 0.0 {
+            (error - prev_err) / dt
+        } else {
+            0.0
         };
+        let d = self.k_d * derivative;
+
+        let output = p + integ_total + d;
+
+        PidOut {
+            output,
+            error,
+            integ_total,
+        }
     }
-
-
-    
 }

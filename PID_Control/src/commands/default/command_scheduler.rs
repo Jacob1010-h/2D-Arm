@@ -1,5 +1,6 @@
 
-use crate::{commands::command_base::{Boxable, CommandBase}, logger::{info, success, warn}};
+use crate::{logger::{info, success, warn}};
+use crate::commands::default::command_base::{Boxable, CommandBase};
 
 pub struct CommandScheduler {
     active: Vec<Box<dyn CommandBase>>,

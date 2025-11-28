@@ -1,4 +1,4 @@
-use crate::commands::command_base::CommandBase;
+use crate::commands::default::command_base::CommandBase;
 
 pub struct InterruptCommand {
     name: String,

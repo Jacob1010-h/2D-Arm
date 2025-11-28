@@ -1,48 +1,62 @@
 mod commands;
 mod constants;
-mod ticker;
-mod robot;
 mod logger;
+mod motor_sim;
+mod pid;
+mod robot;
+mod robot_base;
+mod ticker;
 
-
+use crate::{
+    commands::motor_position_command::MotorPositionCommand,
+    constants::LOOP_RATE_HZ,
+    motor_sim::MotorSim,
+    pid::pid_controller::PidController,
+    robot::Robot,
+    robot_base::{RobotBase, RobotMode},
+    ticker::Ticker,
+};
 use std::time::Instant;
-use crate::{commands::{instant_command::InstantCommand, timed_command::TimedCommand}, constants::LOOP_RATE_HZ, logger::warn, robot::{Robot, RobotMode}, ticker::Ticker};
-
 
 fn main() {
-    let ticker = Ticker::new(LOOP_RATE_HZ);
-    let mut robot = Robot::new();
+    let mut robot: Robot = Robot::new();
 
-    robot.init();
+    // Init the robot
+    robot.robot_init();
+    match robot.get_mode() {
+        RobotMode::AUTONOMOUS => robot.auto_init(),
+        RobotMode::TELEOP => robot.teleop_init(),
+        RobotMode::None => logger::error("[Main]", "Robot Mode not set"),
+    }
 
-    robot.scheduler.schedule(
-        InstantCommand::new("StartupPrint", || {
-            println!(">>> Robot startup scheck!");
-        })
-    );
+    // Add commands here...
+    let motor: MotorSim = MotorSim::new();
 
-    robot.scheduler.schedule(
-        TimedCommand::new("WarmUpTimer", 1.0)
-    );
+    let pid: PidController = PidController::new(10.0, 0.05, 0.5);
 
+    let target_pos_rad = std::f64::consts::FRAC_PI_2;
+
+    let cmd = MotorPositionCommand::new("ArmTo90deg", motor, pid, target_pos_rad);
+    robot.scheduler.schedule(cmd);
+
+    // Print that we are entering the loop
     let _msg = format!("Entering robot loop at {} Hz\n", LOOP_RATE_HZ);
     println!();
-    warn("[Main]", _msg);
-
+    logger::debug("[Main]", _msg);
 
     loop {
+        // start and record the loop start time
         let start = Instant::now();
 
-        robot.periodic();
+        robot.robot_periodic();
 
         match robot.get_mode() {
             RobotMode::AUTONOMOUS => robot.auto_periodic(),
             RobotMode::TELEOP => robot.teleop_periodic(),
-            RobotMode::None => println!("[Main] Robot Mode not set"),
+            RobotMode::None => logger::error("[Main]", "Robot Mode not set"),
         }
 
-        ticker.wait(start);
+        // wait the remaining time
+        Ticker::new(LOOP_RATE_HZ).wait(start);
     }
-
-    
 }

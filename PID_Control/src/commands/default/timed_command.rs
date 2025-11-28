@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use colored::Colorize;
 
-use crate::{commands::command_base::CommandBase, logger::{info, success, warn}};
+use crate::{commands::default::command_base::CommandBase, logger::{info, success, warn}};
 
 #[derive(Debug)]
 pub struct TimedCommand {

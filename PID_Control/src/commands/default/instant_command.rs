@@ -1,7 +1,6 @@
 use std::sync::Arc;
-use colored::Colorize;
 
-use crate::{commands::command_base::CommandBase, logger::{info, success, warn}};
+use crate::{commands::default::command_base::CommandBase, logger::{info, success, warn}};
 
 pub struct InstantCommand {
     name: String,

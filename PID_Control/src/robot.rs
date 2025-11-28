@@ -1,56 +1,57 @@
-use crate::{commands::command_scheduler::CommandScheduler, logger::info};
+use crate::{commands::default::command_scheduler::CommandScheduler, logger, robot_base::{RobotBase, RobotMode}};
 
-#[derive(Clone, Copy)]
-pub enum RobotMode {
-    AUTONOMOUS,
-    TELEOP,
-    None,
-}
 
+use crate::commands::motor_position_command;
 pub struct Robot {
     pub scheduler: CommandScheduler,
     mode: RobotMode,
 }
 
-impl Robot {
-    pub fn new() -> Self {
+impl RobotBase for Robot {
+    fn new() -> Self {
         Self {
             scheduler: CommandScheduler::new(),
             mode: RobotMode::None
         }
     }
 
-    pub fn get_mode(&mut self) -> RobotMode {
+    fn get_mode(&mut self) -> RobotMode {
         return self.mode;
     }
 
-    pub fn set_mode(&mut self, mode: RobotMode) {
+    fn set_mode(&mut self, mode: RobotMode) {
         self.mode = mode;
     }
 
-    pub fn init(&mut self) {
+    /// Gives the option to input a new [RobotMode]
+    fn robot_init_mode(&mut self, mode: RobotMode) {
+        self.set_mode(mode);
+    }
+
+    /// Assumes a [RobotMode] of [RobotMode::TELEOP]
+    fn robot_init(&mut self) {
         self.set_mode(RobotMode::TELEOP);
     }
 
-    pub fn periodic(&mut self) {
+    fn robot_periodic(&mut self) {
         self.scheduler.run();
     }
 
-    pub fn auto_init(&mut self) {
-        info("[Robot]","Automous Init");
+    fn auto_init(&mut self) {
+        logger::info("[Robot]","Automous Init");
         self.mode = RobotMode::AUTONOMOUS;
     }
 
-    pub fn auto_periodic(&mut self) {
+    fn auto_periodic(&mut self) {
 
     }
 
-    pub fn teleop_init(&mut self) {
-        info("[Robot]", "Teleop Init");
+    fn teleop_init(&mut self) {
+        logger::info("[Robot]", "Teleop Init");
         self.mode = RobotMode::TELEOP;
     }
 
-    pub fn teleop_periodic(&mut self) {
+    fn teleop_periodic(&mut self) {
 
     }
 
