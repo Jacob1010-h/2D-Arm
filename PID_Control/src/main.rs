@@ -1,16 +1,14 @@
-mod commands;
 mod constants;
 mod logger;
-mod motor_sim;
+mod motor;
 mod pid;
 mod robot;
 mod robot_base;
 mod ticker;
 
 use crate::{
-    commands::motor_position_command::MotorPositionCommand,
     constants::LOOP_RATE_HZ,
-    motor_sim::MotorSim,
+    motor::motor_sim::MotorSim,
     pid::pid_controller::PidController,
     robot::Robot,
     robot_base::{RobotBase, RobotMode},
@@ -29,7 +27,6 @@ fn main() {
         RobotMode::None => logger::error("[Main]", "Robot Mode not set"),
     }
 
-    // Add commands here...
     let motor: MotorSim = MotorSim::new();
 
     let pid: PidController = PidController::new(10.0, 0.05, 0.5);
@@ -38,9 +35,8 @@ fn main() {
     let target_pos_deg: f32 = 45.0;
     let target_pos_rad: f64 = target_pos_deg.to_radians().into();
 
-    let cmd = MotorPositionCommand::new("ArmTo90deg", motor, pid, target_pos_rad);
-    robot.scheduler.schedule(cmd);
-
+    // Set the Motor Position 
+    
     // Print that we are entering the loop
     let _msg = format!("Entering robot loop at {} Hz\n", LOOP_RATE_HZ);
     println!();

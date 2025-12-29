@@ -1,16 +1,13 @@
-use crate::{commands::default::command_scheduler::CommandScheduler, logger, robot_base::{RobotBase, RobotMode}};
+use crate::{logger, robot_base::{RobotBase, RobotMode}};
 
 
-use crate::commands::motor_position_command;
 pub struct Robot {
-    pub scheduler: CommandScheduler,
     mode: RobotMode,
 }
 
 impl RobotBase for Robot {
     fn new() -> Self {
         Self {
-            scheduler: CommandScheduler::new(),
             mode: RobotMode::None
         }
     }
@@ -34,7 +31,7 @@ impl RobotBase for Robot {
     }
 
     fn robot_periodic(&mut self) {
-        self.scheduler.run();
+        // TODO: Run Robot code
     }
 
     fn auto_init(&mut self) {

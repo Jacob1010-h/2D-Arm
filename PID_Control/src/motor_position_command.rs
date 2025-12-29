@@ -57,52 +57,7 @@ impl CommandBase for MotorPositionCommand {
     }
 
     fn execute(&mut self) {
-        let now = Instant::now();
-        let dt = if let Some(last) = self.last_time {
-            (now - last).as_secs_f64()
-        } else {
-            0.0
-        };
-
-        self.last_time = Some(now);
-
-        let current_pos = self.motor.position_rad();
-
-        let PidOut {
-            output,
-            error,
-            integ_total,
-        } = self.pid.step(
-            dt,
-            self.target_pos_rad,
-            current_pos,
-            self.prev_error,
-            self.integ_total,
-        );
-
-        self.prev_error = error;
-        self.integ_total = integ_total;
-
-        let v_clamped = output.clamp(-self.motor.max_voltage, self.motor.max_voltage);
-        self.motor.set_voltage(v_clamped);
-        self.motor.step(dt);
-
-        logger::debug(
-            "[MotorCmd]",
-            format!(
-                "dt={:.3} pos={:.3} target={:.3} err={:.3} vel={:.3} V={:.3}",
-                dt,
-                current_pos,
-                self.target_pos_rad,
-                error,
-                self.motor.velocity_rad_s(),
-                output,
-            ),
-        );
-
-        if error.abs() < 0.01 && self.motor.velocity_rad_s().abs() < 0.01 {
-            self.done = true;
-        }
+        
     }
 
     fn is_finished(&mut self) -> bool {
